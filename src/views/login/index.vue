@@ -39,7 +39,13 @@
           </el-form-item>
 
           <el-form-item>
-            <el-button class="btn-login" type="primary" round @click="doLogin('ruleForm')">登录</el-button>
+            <el-button
+              class="btn-login"
+              type="primary"
+              round
+              @click="doLogin('ruleForm')"
+              :loading="isLoading"
+            >登录</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -71,7 +77,9 @@ export default {
         agree: [{ pattern: /true/, message: "请勾选同意", trigger: "change" }]
       },
       // 获取验证码的倒计时，默认为60
-      sec: 60
+      sec: 60,
+      // 控制登录按钮的加载动画，默认为false代表默认不要有加载动画
+      isLoading: false
     };
   },
 
@@ -108,6 +116,9 @@ export default {
       this.$refs[formName].validate(valid => {
         if (valid) {
           //能来到这里就代表规则全部通过，此时发请求才比较合理
+
+          this.isLoading = true;
+
           this.$axios
             .post("http://ttapi.research.itcast.cn/mp/v1_0/authorizations", {
               mobile: this.ruleForm.phone,
@@ -115,11 +126,19 @@ export default {
             })
             .then(res => {
               console.log(res);
+
+              let jsonRes = JSON.stringify(res.data.data);
+              window.sessionStorage.setItem("user-Info", jsonRes);
+
               if (res.data.message == "OK") {
                 this.$message({
                   message: "登录成功!",
                   type: "success"
                 });
+
+                /* res = JSON.stringify(res);
+                window.sessionStorage.setItem("info", res); */
+
                 this.$router.push("/home");
               } else {
                 //如果错误提示错误信息并不跳转
@@ -130,6 +149,8 @@ export default {
               }
             })
             .catch(() => {
+              this.isLoading = false;
+
               this.$message({
                 message: "账号或密码错误!",
                 type: "error"
