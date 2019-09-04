@@ -7,6 +7,34 @@ import axios from "axios";
 axios.defaults.baseURL = "http://ttapi.research.itcast.cn/";
 Vue.prototype.$axios = axios; //添加原型
 
+//导入全局默认css样式
+import "./assets/css/base.css";
+
+import JSONbig from "json-bigint";
+// `transformResponse` 在传递给 then/catch 前，允许修改响应数据
+axios.defaults.transformResponse = [
+  function(data) {
+    // 对 data 进行任意转换处理
+    // 作用1:把JSON字符串转成JS对象
+    // 作用2:会判断字符串里面有没有大数字,有的话,会把大数字做精度处理
+
+    try {
+      let obj = JSONbig.parse(data);
+      return obj;
+    } catch (error) {
+      return data;
+    }
+  }
+];
+
+//导入饿了么ui
+import ElementUI from "element-ui";
+import "element-ui/lib/theme-chalk/index.css";
+//调用饿了么ui
+Vue.use(ElementUI);
+
+import router from "./router";
+
 // 添加请求拦截器
 axios.interceptors.request.use(
   function(config) {
@@ -41,17 +69,6 @@ axios.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-//导入全局默认css样式
-import "./assets/css/base.css";
-
-//导入饿了么ui
-import ElementUI from "element-ui";
-import "element-ui/lib/theme-chalk/index.css";
-//调用饿了么ui
-Vue.use(ElementUI);
-
-import router from "./router";
 
 new Vue({
   router,

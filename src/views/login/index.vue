@@ -125,7 +125,7 @@ export default {
               code: this.ruleForm.code
             })
             .then(res => {
-              console.log(res);
+              // console.log(res);
 
               let jsonRes = JSON.stringify(res.data.data);
               window.sessionStorage.setItem("user-Info", jsonRes);

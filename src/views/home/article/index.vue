@@ -62,9 +62,9 @@
       <el-table-column prop="pubdate" label="发布时间" width="200"></el-table-column>
 
       <el-table-column label="操作">
-        <template>
+        <template slot-scope="scope">
           <el-button size="small" plain type="primary">编辑</el-button>
-          <el-button size="small" plain type="danger">删除</el-button>
+          <el-button size="small" plain type="danger" @click="doDel(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -104,33 +104,44 @@ export default {
   methods: {
     //筛选点击事件
     doSearch() {
+      this.loadTableData(1);
+    },
+
+    //删除
+    doDel(row) {
+      this.$confirm("是否确认要删除?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$axios.delete(`/mp/v1_0/articles/${row.id}`).then(res => {
+            // console.log(res);
+            this.$message({
+              type: "success",
+              message: "删除成功!"
+            });
+
+            this.loadTableData(1);
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
+
+    // 封装的获取表格数据的方法
+    loadTableData(page) {
       const status =
         this.searchForm.status === "" ? undefined : this.searchForm.status;
       const channel_id =
         this.searchForm.select_id === ""
           ? undefined
           : this.searchForm.select_id;
-
-      this.$axios
-        .get("/mp/v1_0/articles", {
-          params: {
-            status,
-            channel_id,
-            begin_pubdate: this.searchForm.date[0],
-            end_pubdate: this.searchForm.date[1],
-            page: 1
-          }
-        })
-        .then(res => {
-          // console.log(res);
-          this.tableData = res.data.data.results;
-          this.total = res.data.data.total_count;
-        });
-    },
-
-    // 封装的获取表格数据的方法
-    loadTableData(page) {
-      let obj = JSON.parse(window.sessionStorage.getItem("user-Info"));
+      // let obj = JSON.parse(window.sessionStorage.getItem("user-Info"));
       // console.log(obj);
       this.loading = true;
 
@@ -140,6 +151,10 @@ export default {
             Authorization: `Bearer ${obj.token}`
           }, */
           params: {
+            status,
+            channel_id,
+            begin_pubdate: this.searchForm.date[0],
+            end_pubdate: this.searchForm.date[1],
             page: page
           }
         })
