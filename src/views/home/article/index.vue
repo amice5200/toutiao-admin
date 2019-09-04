@@ -6,24 +6,30 @@
       <el-form ref="form" :model="searchForm">
         <el-form-item label="文章状态:">
           <el-radio-group v-model="searchForm.status">
-            <el-radio :label="1">全部</el-radio>
-            <el-radio :label="2">草稿</el-radio>
-            <el-radio :label="3">待审核</el-radio>
-            <el-radio :label="4">审核通过</el-radio>
-            <el-radio :label="5">审核失败</el-radio>
+            <el-radio label>全部</el-radio>
+            <el-radio :label="0">草稿</el-radio>
+            <el-radio :label="1">待审核</el-radio>
+            <el-radio :label="2">审核通过</el-radio>
+            <el-radio :label="3">审核失败</el-radio>
           </el-radio-group>
         </el-form-item>
 
         <el-form-item label="频道列表:">
           <el-select placeholder="请选择活动区域" v-model="searchForm.select_id">
             <el-option label="所有频道" value></el-option>
-            <el-option label="区域二" value="two"></el-option>
+            <el-option
+              v-for="item in selectList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            ></el-option>
           </el-select>
         </el-form-item>
 
         <el-form-item label="时间选择:">
           <el-date-picker
             v-model="searchForm.date"
+            value-format="yyyy-MM-dd"
             type="daterange"
             range-separator="至"
             start-placeholder="开始日期"
@@ -32,7 +38,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary">筛选</el-button>
+          <el-button type="primary" @click="doSearch">筛选</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -56,7 +62,7 @@
       <el-table-column prop="pubdate" label="发布时间" width="200"></el-table-column>
 
       <el-table-column label="操作">
-        <template slot-scope="scope">
+        <template>
           <el-button size="small" plain type="primary">编辑</el-button>
           <el-button size="small" plain type="danger">删除</el-button>
         </template>
@@ -78,42 +84,50 @@
 
 <script>
 export default {
+  name: "articless",
   data() {
     return {
+      //选项列表
+      selectList: [],
       loading: false,
       total: 0,
       searchForm: {
-        status: 2,
+        status: "",
         select_id: "",
         date: ""
       },
 
-      tableData: [
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄"
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1517 弄"
-        },
-        {
-          date: "2016-05-01",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1519 弄"
-        },
-        {
-          date: "2016-05-03",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1516 弄"
-        }
-      ]
+      tableData: []
     };
   },
 
   methods: {
+    //筛选点击事件
+    doSearch() {
+      const status =
+        this.searchForm.status === "" ? undefined : this.searchForm.status;
+      const channel_id =
+        this.searchForm.select_id === ""
+          ? undefined
+          : this.searchForm.select_id;
+
+      this.$axios
+        .get("/mp/v1_0/articles", {
+          params: {
+            status,
+            channel_id,
+            begin_pubdate: this.searchForm.date[0],
+            end_pubdate: this.searchForm.date[1],
+            page: 1
+          }
+        })
+        .then(res => {
+          // console.log(res);
+          this.tableData = res.data.data.results;
+          this.total = res.data.data.total_count;
+        });
+    },
+
     // 封装的获取表格数据的方法
     loadTableData(page) {
       let obj = JSON.parse(window.sessionStorage.getItem("user-Info"));
@@ -130,7 +144,7 @@ export default {
           }
         })
         .then(res => {
-          console.log(res);
+          // console.log(res);
           // 给表格数据源赋值
           this.tableData = res.data.data.results;
           this.total = res.data.data.total_count;
@@ -146,6 +160,11 @@ export default {
 
   created() {
     this.loadTableData(1);
+
+    this.$axios.get("/mp/v1_0/channels").then(res => {
+      console.log(res);
+      this.selectList = res.data.data.channels;
+    });
   },
 
   filters: {
