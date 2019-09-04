@@ -60,7 +60,7 @@ export default {
       ruleForm: {
         phone: "18801185985",
         code: "",
-        agree: "false"
+        agree: false
       },
       rules: {
         phone: [
@@ -120,7 +120,7 @@ export default {
           this.isLoading = true;
 
           this.$axios
-            .post("http://ttapi.research.itcast.cn/mp/v1_0/authorizations", {
+            .post("mp/v1_0/authorizations", {
               mobile: this.ruleForm.phone,
               code: this.ruleForm.code
             })
