@@ -12,6 +12,7 @@ import "nprogress/nprogress.css";
 import login from "../views/login";
 import home from "../views/home";
 import article from "../views/home/article";
+import publish from "../views/home/publish";
 
 // 准备路由规则
 const routes = [
@@ -20,7 +21,10 @@ const routes = [
     path: "/home",
     component: home,
     //设置home下面的子路由
-    children: [{ path: "/article", component: article }]
+    children: [
+      { path: "/article", component: article },
+      { path: "/publish", component: publish }
+    ]
   },
   { path: "/", redirect: "/login" }
 ];
@@ -62,6 +66,13 @@ router.afterEach((to, from) => {
     NProgress.done();
   }, 1000);
 });
+
+//使用ElementUi时点击同一个路由，页面报错
+
+const originalPush = VueRouter.prototype.push;
+VueRouter.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => err);
+};
 
 // 默认暴露（默认导出）
 // 把router这个对象暴露出去
