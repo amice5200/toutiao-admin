@@ -12,7 +12,8 @@
       <el-form-item label="封面"></el-form-item>
 
       <el-form-item label="频道">
-        <ttchannel></ttchannel>
+        <!-- <ttchannel :select_id="editorForm.select_id" @change="editorForm.select_id = $event"></ttchannel> -->
+        <ttchannel v-model="editorForm.select_id"></ttchannel>
       </el-form-item>
 
       <el-form-item>
@@ -41,7 +42,8 @@ export default {
     return {
       editorForm: {
         title: "",
-        content: ""
+        content: "",
+        select_id: ""
       },
 
       //表单验证规则
@@ -96,7 +98,7 @@ export default {
                   "http://toutiao.meiduo.site/Fjl26KTE9-NFfkRzIZOner4yeqGl"
                 ]
               },
-              channel_id: 2
+              channel_id: this.editorForm.select_id
             })
             .then(res => {
               // console.log(res);

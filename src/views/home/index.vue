@@ -154,7 +154,12 @@ export default {
 
     .my-aside-main {
       padding: 0;
-      overflow: visible;
+      // overflow: visible;
+
+      .el-menu-vertical-demo {
+        border: 0;
+        overflow: hidden;
+      }
     }
   }
 
