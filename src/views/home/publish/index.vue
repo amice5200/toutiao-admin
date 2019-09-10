@@ -1,6 +1,12 @@
 <template>
   <div>
-    <el-form ref="editorForm" :rules="rules" :model="editorForm" label-width="55px">
+    <el-form
+      v-loading="isLoading"
+      ref="editorForm"
+      :rules="rules"
+      :model="editorForm"
+      label-width="55px"
+    >
       <el-form-item label="标题" prop="title">
         <el-input v-model="editorForm.title" placeholder="文章名称"></el-input>
       </el-form-item>
@@ -13,7 +19,7 @@
 
       <el-form-item label="频道">
         <!-- <ttchannel :select_id="editorForm.select_id" @change="editorForm.select_id = $event"></ttchannel> -->
-        <ttchannel v-model="editorForm.select_id"></ttchannel>
+        <ttchannel v-model="editorForm.channel_id"></ttchannel>
       </el-form-item>
 
       <el-form-item>
@@ -40,11 +46,16 @@ export default {
   data() {
     name: "publish";
     return {
+      isLoading: true,
+
       editorForm: {
         title: "",
         content: "",
-        select_id: ""
+        channel_id: ""
       },
+
+      //保存初始的数据
+      oldForm: {},
 
       //表单验证规则
       rules: {
@@ -84,29 +95,55 @@ export default {
       }
     };
   },
+
   methods: {
     doPublish(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          this.$axios
-            .post("/mp/v1_0/articles", {
-              title: this.editorForm.title,
-              content: this.editorForm.content,
-              cover: {
-                type: 1,
-                images: [
-                  "http://toutiao.meiduo.site/Fjl26KTE9-NFfkRzIZOner4yeqGl"
-                ]
-              },
-              channel_id: this.editorForm.select_id
-            })
-            .then(res => {
-              // console.log(res);
-              if (res.data.message.toLowerCase() == "ok") {
-                this.$message.success("发布成功!");
-                this.$router.push("/article");
-              }
-            });
+          if (this.$route.name == "publish-edit") {
+            //做修改操作
+            this.$axios
+              .put(`/mp/v1_0/articles/${this.$route.params.id}`, {
+                title: this.editorForm.title,
+                content: this.editorForm.content,
+                cover: {
+                  type: 1,
+                  images: [
+                    "http://toutiao.meiduo.site/Fjl26KTE9-NFfkRzIZOner4yeqGl"
+                  ]
+                },
+                channel_id: this.editorForm.channel_id
+              })
+              .then(res => {
+                console.log(res);
+                if (res.data.message.toLowerCase() == "ok") {
+                  this.$message.success("修改成功~~!");
+
+                  this.$router.push("/article");
+                }
+              });
+          } else {
+            //发请求新增
+            this.$axios
+              .post("/mp/v1_0/articles", {
+                title: this.editorForm.title,
+                content: this.editorForm.content,
+                cover: {
+                  type: 1,
+                  images: [
+                    "http://toutiao.meiduo.site/Fjl26KTE9-NFfkRzIZOner4yeqGl"
+                  ]
+                },
+                channel_id: this.editorForm.channel_id
+              })
+              .then(res => {
+                // console.log(res);
+                if (res.data.message.toLowerCase() == "ok") {
+                  this.$message.success("发布成功!");
+                  this.$router.push("/article");
+                }
+              });
+          }
         } else {
           console.log("error submit!!");
           return false;
@@ -115,7 +152,78 @@ export default {
     },
     resetForm(formName) {
       this.$refs[formName].resetFields();
+    },
+    loadAxios() {
+      this.$axios
+        .get(`/mp/v1_0/articles/${this.$route.params.id}`)
+        .then(res => {
+          // console.log(res);
+          this.editorForm = res.data.data;
+
+          // 如果直接赋值，他们访问的都是同一个地址，同一个对象
+          // 一方改变，另一方也跟着变，那么他们就永远相等
+          // this.oldForm = this.form;
+          this.oldForm = { ...this.editorForm };
+
+          this.isLoading = false;
+        });
     }
+  },
+
+  created() {
+    //获取传递过来的id
+    // console.log(this.$route.params.id);
+    if (this.$route.name == "publish-edit") {
+      this.loadAxios();
+    } else {
+      //新增不用加载中
+      this.isLoading = false;
+    }
+  },
+
+  watch: {
+    "$route.params.id"(val) {
+      // console.log("变化了:" + val);
+
+      if (val) {
+        //有值，代表这是修改，只是把id变了，根据新的id去发请求获取数据渲染界面
+        this.loadAxios();
+      } else {
+        //如果value没值，代表是新增，新增就要把界面清空
+        this.editorForm.title = "";
+        this.editorForm.content = "";
+      }
+    }
+  },
+
+  beforeRouteLeave(to, from, next) {
+    if (this.$route.name == "publish-edit") {
+      //判断原来的内容和现在表单的内容是否一样(判断是否有修改)
+      if (
+        this.editorForm.title == this.oldForm.title &&
+        this.editorForm.content == this.oldForm.content
+      ) {
+        return next();
+      }
+    } else {
+      //新增判断是否为空
+      if (this.editorForm.title == "" && this.editorForm.content == "") {
+        return next();
+      }
+    }
+
+    this.$confirm("你有未保存的内容, 是否离开?", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning"
+    })
+      .then(() => {
+        //确定离开
+        next();
+      })
+      .catch(() => {
+        //取消
+      });
   }
 };
 </script>

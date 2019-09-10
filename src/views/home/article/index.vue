@@ -63,7 +63,7 @@
 
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button size="small" plain type="primary">编辑</el-button>
+          <el-button size="small" plain type="primary" @click="doEdit(scope.row)">编辑</el-button>
           <el-button size="small" plain type="danger" @click="doDel(scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -105,6 +105,13 @@ export default {
     //筛选点击事件
     doSearch() {
       this.loadTableData(1);
+    },
+
+    //编辑
+    doEdit(row) {
+      // alert(row.id);
+      //跳转
+      this.$router.push(`/publish/${row.id}`);
     },
 
     //删除
@@ -175,9 +182,9 @@ export default {
 
   created() {
     this.loadTableData(1);
-
+    
     this.$axios.get("/mp/v1_0/channels").then(res => {
-      console.log(res);
+      // console.log(res);
       this.selectList = res.data.data.channels;
     });
   },

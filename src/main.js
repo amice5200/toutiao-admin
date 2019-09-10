@@ -59,11 +59,15 @@ axios.interceptors.response.use(
     return response;
   },
   function(error) {
-    // 提示请先登录
-    Vue.prototype.$message.error("请先登录");
+    // console.dir(error);
 
-    // 打回登录页
-    router.push("/login");
+    if (error.response.status == 401) {
+      // 提示请先登录
+      Vue.prototype.$message.error("请先登录");
+      // 打回登录页
+      router.push("/login");
+    }
+
     // window.console.log('错误响应')
     // 对响应错误做点什么
     return Promise.reject(error);

@@ -13,6 +13,7 @@ import login from "../views/login";
 import home from "../views/home";
 import article from "../views/home/article";
 import publish from "../views/home/publish";
+import comment from "../views/home/comment";
 
 // 准备路由规则
 const routes = [
@@ -23,7 +24,9 @@ const routes = [
     //设置home下面的子路由
     children: [
       { path: "/article", component: article },
-      { path: "/publish", component: publish }
+      { path: "/publish", component: publish },
+      { path: "/publish/:id", component: publish, name: "publish-edit" },
+      { path: "/comment", component: comment, name: "comment" }
     ]
   },
   { path: "/", redirect: "/login" }
