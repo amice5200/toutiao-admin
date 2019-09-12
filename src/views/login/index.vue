@@ -58,7 +58,7 @@ export default {
   data() {
     return {
       ruleForm: {
-        phone: "18801185985",
+        phone: "13911111111",
         code: "",
         agree: false
       },

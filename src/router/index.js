@@ -14,6 +14,7 @@ import home from "../views/home";
 import article from "../views/home/article";
 import publish from "../views/home/publish";
 import comment from "../views/home/comment";
+import account from "../views/home/account";
 
 // 准备路由规则
 const routes = [
@@ -26,7 +27,8 @@ const routes = [
       { path: "/article", component: article },
       { path: "/publish", component: publish },
       { path: "/publish/:id", component: publish, name: "publish-edit" },
-      { path: "/comment", component: comment, name: "comment" }
+      { path: "/comment", component: comment, name: "comment" },
+      { path: "/account", component: account, name: "account" }
     ]
   },
   { path: "/", redirect: "/login" }
